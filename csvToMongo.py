@@ -11,15 +11,16 @@ from collections import OrderedDict
 from pymongo import MongoClient
 
 
-def csv2mongo(csvfile, database_name,collection_name,delete_collection_before_import, host, port):
+def csv2mongo(csvfile, database_name,collection_name, host, port):
     response_dict = OrderedDict()
+    mc = MongoClient(f'mongodb://{host}:{port}/')
+    db = mc[database_name]
+    collection = db[collection_name].delete_many({})
+    print(collection)
     try:
         mc = MongoClient(f'mongodb://{host}:{port}/')
         db = mc[database_name]
         collection = db[collection_name]
-
-        if delete_collection_before_import == True:
-            db.collection.delete_many({})
         # open the csv file.
         csvhandle = csv.reader(open(csvfile, 'r'), delimiter=',')
 
@@ -72,25 +73,11 @@ def csv2mongo(csvfile, database_name,collection_name,delete_collection_before_im
     
     return response_dict
 
-    # mc = MongoClient(host=host, port=port)
-    # db = mc[database_name]
-    # collection = db[collection_name]
-    # result = db.collection.delete_many({})
-    # print(result)
-
-
-mc = MongoClient('mongodb://localhost:27017/')
-db = mc['flights']
-collection = db["STG3Today"].delete_many({})
-print(collection)
-
-
 # current directory
 currentDirectory = os.getcwd()
 csv_file = f'{currentDirectory}\\data\\data.csv'
 database = 'flights'
 collection = 'STG3Today'
-delete_collection = True
 host = 'localhost'
 port = 27017
 
@@ -98,10 +85,7 @@ result = csv2mongo(
     csv_file,
     database,
     collection,
-    delete_collection,
     host,
     port)
 # output the JSON transaction summary
 print(json.dumps(result, indent=4))
-
-
